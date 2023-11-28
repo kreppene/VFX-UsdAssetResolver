@@ -1,9 +1,12 @@
 REM Clear current session log 
 cls
 REM Source environment (Uncomment lines starting with "set" if you current env does not have these defined.)
-REM set HFS=C:\Program Files\Side Effects Software\<InsertHoudiniVersion>
+set DCC=MAYA
+REM set HFS=C:\Program Files\Side Effects Software\Houdini 19.5.605
+set MAYA_DEVKIT=C:\qvisten_pipeline\assetResolver\devkit_2024
+set MAYA_ROOT=C:\Program Files\Autodesk\Maya2022
 REM Define Resolver > Has to be one of 'fileResolver'/'pythonResolver'/'cachedResolver'/'httpResolver'
-REM set RESOLVER_NAME=fileResolver
+set RESOLVER_NAME=cachedResolver
 REM Clear existing build data and invoke cmake
 rmdir /S /Q build
 rmdir /S /Q dist

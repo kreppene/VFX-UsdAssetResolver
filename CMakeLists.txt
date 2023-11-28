@@ -70,58 +70,99 @@ if (WIN32)
 else()
     set(AR_ARCH_LIB_SUFFIX "so")
 endif()
-# Houdini
-set(AR_HOUDINI_ROOT $ENV{HFS} CACHE PATH "Houdini install directory")
-if (WIN32)
-    set(AR_HOUDINI_LIB_DIR ${AR_HOUDINI_ROOT}/custom/houdini/dsolib)
-else()
-    set(AR_HOUDINI_LIB_DIR ${AR_HOUDINI_ROOT}/dsolib)
-endif()
-set(AR_HOUDINI_INCLUDE_DIR ${AR_HOUDINI_ROOT}/toolkit/include)
-# Usd
-if (WIN32)
-    set(AR_PXR_LIB_DIR ${AR_HOUDINI_ROOT}/custom/houdini/dsolib)
-    set(AR_PXR_LIB_PREFIX "libpxr_")
-else()
-    set(AR_PXR_LIB_DIR ${AR_HOUDINI_ROOT}/dsolib)
-    set(AR_PXR_LIB_PREFIX "pxr_")
-endif()
-set(AR_PXR_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR})
-# Python
-if (WIN32)
-    if(EXISTS "${AR_HOUDINI_ROOT}/python310")
-        set(AR_PYTHON_LIB python3.10)
-        set(AR_PYTHON_LIB_NUMBER python310)
+
+
+# HOUDINI
+if("$ENV{DCC}" STREQUAL "HOUDINI")
+
+    set(AR_DCC_ROOT $ENV{HFS} CACHE PATH "Houdini install directory")
+    if (WIN32)
+        set(AR_DCC_LIB_DIR ${AR_DCC_ROOT}/custom/houdini/dsolib)
+
+        # Usd
+        set(AR_PXR_LIB_DIR ${AR_DCC_ROOT}/custom/houdini/dsolib)
+        set(AR_PXR_LIB_PREFIX "libpxr_")  
+
+        # Python
+        if(EXISTS "${AR_DCC_ROOT}/python310")
+            set(AR_PYTHON_LIB python3.10)
+            set(AR_PYTHON_LIB_NUMBER python310)
+        else()
+            set(AR_PYTHON_LIB python3.9)
+            set(AR_PYTHON_LIB_NUMBER python39)
+        endif()  
+
+        # Boost
+        set(AR_BOOST_NAMESPACE hboost)
+        set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER}-mt-x64)
+
+        set(AR_PYTHON_LIB_DIR ${AR_DCC_ROOT}/${AR_PYTHON_LIB_NUMBER}/libs)
+        set(AR_PYTHON_LIB_SITEPACKAGES ${AR_DCC_ROOT}/${AR_PYTHON_LIB_NUMBER}/lib/site-packages)
+
     else()
-        set(AR_PYTHON_LIB python3.9)
-        set(AR_PYTHON_LIB_NUMBER python39)
+        set(AR_DCC_LIB_DIR ${AR_DCC_ROOT}/dsolib)
+
+        # Usd
+        set(AR_PXR_LIB_DIR ${AR_DCC_ROOT}/dsolib)
+        set(AR_PXR_LIB_PREFIX "pxr_")      
+
+        # Python  
+        if(EXISTS "${AR_DCC_ROOT}/python/bin/python3.10")
+            set(AR_PYTHON_LIB python3.10)
+            set(AR_PYTHON_LIB_NUMBER python310)
+        else()
+            set(AR_PYTHON_LIB python3.9)
+            set(AR_PYTHON_LIB_NUMBER python39)
+        endif()   
+
+        # Boost
+        set(AR_BOOST_NAMESPACE hboost)
+        set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER})
+
+        set(AR_PYTHON_LIB_DIR ${AR_DCC_ROOT}/python/lib)
+        set(AR_PYTHON_LIB_SITEPACKAGES ${AR_PYTHON_LIB_DIR}/${AR_PYTHON_LIB}/site-packages)
     endif()
-else()
-    if(EXISTS "${AR_HOUDINI_ROOT}/python/bin/python3.10")
-        set(AR_PYTHON_LIB python3.10)
-        set(AR_PYTHON_LIB_NUMBER python310)
-    else()
-        set(AR_PYTHON_LIB python3.9)
-        set(AR_PYTHON_LIB_NUMBER python39)
-    endif()
+    
+    set(AR_DCC_INCLUDE_DIR ${AR_DCC_ROOT}/toolkit/include)
+    set(AR_BOOST_INCLUDE_DIR ${AR_DCC_INCLUDE_DIR}/${AR_BOOST_NAMESPACE})  
+
+    set(AR_PXR_INCLUDE_DIR ${AR_DCC_INCLUDE_DIR})
+    set(AR_PYTHON_INCLUDE_DIR ${AR_DCC_INCLUDE_DIR}/${AR_PYTHON_LIB})               
+
+# MAYA
+elseif("$ENV{DCC}" STREQUAL "MAYA")
+    message("Building AssetResolver For Maya")
+    set(AR_DCC_ROOT $ENV{MAYA_DEVKIT} CACHE PATH "Maya install directory")
+    set(AR_MAYA_ROOT $ENV{MAYA_ROOT} CACHE PATH "Maya install directory")
+
+    set(AR_DCC_INCLUDE_DIR ${AR_DCC_ROOT}/include) 
+    set(AR_DCC_LIB_DIR ${AR_DCC_ROOT}/lib)
+
+    # Usd
+    set(AR_PXR_LIB_DIR ${AR_DCC_ROOT})
+    set(AR_PXR_LIB_PREFIX "usd_")  
+
+    # Python
+    set(AR_PYTHON_LIB python3.10)
+    set(AR_PYTHON_LIB_NUMBER python310)
+
+    set(AR_PYTHON_LIB_DIR ${AR_MAYA_ROOT}/lib)
+    set(AR_PYTHON_LIB_SITEPACKAGES ${AR_DCC_INCLUDE_DIR}/Python37/Lib/site-packages)
+
+    # Boost
+    set(AR_BOOST_NAMESPACE boost)
+    set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER}-vc142-mt-x64-1_76)
+
+    set(AR_BOOST_INCLUDE_DIR ${AR_DCC_ROOT}/include/boost-1_76)  
+
+    set(AR_PXR_INCLUDE_DIR ${AR_DCC_INCLUDE_DIR}/)
+    set(AR_PYTHON_INCLUDE_DIR ${AR_MAYA_ROOT}/include/Python37/Python) 
+     
 endif()
 
-if (WIN32)
-    set(AR_PYTHON_LIB_DIR ${AR_HOUDINI_ROOT}/${AR_PYTHON_LIB_NUMBER}/libs)
-    set(AR_PYTHON_LIB_SITEPACKAGES ${AR_HOUDINI_ROOT}/${AR_PYTHON_LIB_NUMBER}/lib/site-packages)
-else()
-    set(AR_PYTHON_LIB_DIR ${AR_HOUDINI_ROOT}/python/lib)
-    set(AR_PYTHON_LIB_SITEPACKAGES ${AR_PYTHON_LIB_DIR}/${AR_PYTHON_LIB}/site-packages)
-endif()
-set(AR_PYTHON_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR}/${AR_PYTHON_LIB})
-# Boost
-set(AR_BOOST_NAMESPACE hboost)
-if (WIN32)
-    set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER}-mt-x64)
-else()
-    set(AR_BOOST_PYTHON_LIB ${AR_BOOST_NAMESPACE}_${AR_PYTHON_LIB_NUMBER})
-endif()
-set(AR_BOOST_INCLUDE_DIR ${AR_HOUDINI_INCLUDE_DIR}/${AR_BOOST_NAMESPACE})
+
+
+
 
 ### Init ###
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
@@ -154,7 +195,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/defaults)
 include(setBoostNamespace)
 include_directories(${CMAKE_SOURCE_DIR}/src/utils)
 # Houdini
-link_directories(${AR_HOUDINI_LIB_DIR})
+link_directories(${AR_DCC_LIB_DIR})
 # Usd (Already provided via Houdini)
 link_directories(${AR_PXR_LIB_DIR})
 # Python
