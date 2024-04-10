@@ -173,7 +173,8 @@ class Resolver:
 		ancestorLevel = assetPath.count('../')
 
 		assetPath = assetPath.replace('../','')
-		remappedRelativePathIdentifier = f"relativePath|{assetPath}?{anchorAssetPath}!{ancestorLevel}"
+
+		remappedRelativePathIdentifier = f"relativePath|{assetPath}?{anchorAssetPath}!{ancestorLevel}".replace('\\','/')
 
 		resolver.AddCachedRelativePathIdentifierPair(anchoredAssetPath, remappedRelativePathIdentifier)
 
